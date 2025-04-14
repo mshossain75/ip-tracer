@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IP Tracer Result</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #f1f1f1;
+      padding: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #1e1e1e;
+      padding: 30px;
+      border-radius: 8px;
+    }
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    input[type="submit"] {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    h2 {
+      margin-top: 30px;
+    }
+    .info-block {
+      background: #2a2a2a;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .label {
+      font-weight: bold;
+      color: #70e1f5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 IP Tracer Tool</h1>
+    <form method="POST">
+      <input type="text" name="ip" placeholder="Enter IP address..." required>
+      <br>
+      <input type="submit" value="Trace IP">
+    </form>
+
+    {% if info %}
+      <h2>📍 Tracing Info for: {{ info.ip }}</h2>
+      
+      <div class="info-block"><span class="label">Public IP:</span> {{ info.is_public }}</div>
+
+      {% if info.geo %}
+        <div class="info-block"><span class="label">Country:</span> {{ info.geo.country }}</div>
+        <div class="info-block"><span class="label">City:</span> {{ info.geo.city }}</div>
+        <div class="info-block"><span class="label">Region:</span> {{ info.geo.regionName }}</div>
+        <div class="info-block"><span class="label">ISP:</span> {{ info.geo.isp }}</div>
+        <div class="info-block"><span class="label">Latitude:</span> {{ info.geo.lat }}</div>
+        <div class="info-block"><span class="label">Longitude:</span> {{ info.geo.lon }}</div>
+      {% endif %}
+
+      <div class="info-block"><span class="label">Reverse DNS:</span> {{ info.reverse_dns }}</div>
+
+      <div class="info-block">
+        <span class="label">WHOIS Info:</span><br>
+        <pre style="white-space: pre-wrap;">{{ info.whois }}</pre>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
