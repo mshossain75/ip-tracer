@@ -104,13 +104,14 @@ def viewdns_reverse_ip(ip):
 
 def viewdns_http_headers(ip):
     try:
-        key = os.getenv("VIEWDNS_KEY")
-        url = f"https://api.viewdns.info/httpheaders/?url={ip}&apikey={key}&output=json"
+        url = f"https://api.viewdns.info/httpheaders/?url={ip}&apikey={VIEWDNS_KEY}&output=json"
         r = requests.get(url, timeout=10)
-	headers = r.json().get("response", {}).get("headers", {})
+        headers = r.json().get("response", {}).get("headers", {})
         return headers if isinstance(headers, dict) else {}
-    except:
+    except Exception as e:
+        print(f"[ViewDNS Headers Error] {e}")
         return {}
+
 
 def viewdns_dns_records(ip):
     try:
