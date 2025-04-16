@@ -2,3 +2,4 @@ Flask
 requests
 python-dotenv
 python-whois
+pip install xhtml2pdf
