@@ -37,3 +37,9 @@ def trace():
         except:
             info["reverse_dns"] = "N/A"
     return render_template("index.html", info=info)
+
+# ✅ THIS IS THE FIX FOR RENDER
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
