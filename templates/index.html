@@ -1,77 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>IP Tracer Result</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: #f1f1f1;
-      padding: 20px;
-    }
-    .container {
-      max-width: 700px;
-      margin: auto;
-      background: #1e1e1e;
-      padding: 30px;
-      border-radius: 8px;
-    }
-    input[type="text"] {
-      width: 80%;
-      padding: 10px;
-      font-size: 16px;
-    }
-    input[type="submit"] {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 10px;
-    }
-    h2 {
-      margin-top: 30px;
-    }
-    .info-block {
-      background: #2a2a2a;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-    }
-    .label {
-      font-weight: bold;
-      color: #70e1f5;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Trace</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .result {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🔍 IP Tracer Tool</h1>
-    <form method="POST">
-      <input type="text" name="ip" placeholder="Enter IP address..." required>
-      <br>
-      <input type="submit" value="Trace IP">
-    </form>
 
-    {% if info %}
-      <h2>📍 Tracing Info for: {{ info.ip }}</h2>
-      
-      <div class="info-block"><span class="label">Public IP:</span> {{ info.is_public }}</div>
+    <div class="container">
+        <h1>IP Trace</h1>
+        <div class="form-container">
+            <form method="POST">
+                <label for="ip">Enter IP address or domain:</label>
+                <input type="text" id="ip" name="ip" required>
+                <button type="submit">Trace IP</button>
+            </form>
+        </div>
 
-      {% if info.geo %}
-        <div class="info-block"><span class="label">Country:</span> {{ info.geo.country }}</div>
-        <div class="info-block"><span class="label">City:</span> {{ info.geo.city }}</div>
-        <div class="info-block"><span class="label">Region:</span> {{ info.geo.regionName }}</div>
-        <div class="info-block"><span class="label">ISP:</span> {{ info.geo.isp }}</div>
-        <div class="info-block"><span class="label">Latitude:</span> {{ info.geo.lat }}</div>
-        <div class="info-block"><span class="label">Longitude:</span> {{ info.geo.lon }}</div>
-      {% endif %}
+        <div class="result">
+            {% if info %}
+                <h2>Results for {{ info.ip }}</h2>
+                <p><strong>Is Public IP:</strong> {{ info.is_public }}</p>
+                <p><strong>Geolocation:</strong> {{ info.geo.city }}, {{ info.geo.regionName }}, {{ info.geo.country }}</p>
 
-      <div class="info-block"><span class="label">Reverse DNS:</span> {{ info.reverse_dns }}</div>
+                {% if info.whois %}
+                    <h3>WHOIS Information:</h3>
+                    <pre style="white-space: pre-wrap;">{{ info.whois }}</pre>
+                {% else %}
+                    <p>WHOIS information not available.</p>
+                {% endif %}
 
-      <div class="info-block">
-        <span class="label">WHOIS Info:</span><br>
-        <pre style="white-space: pre-wrap;">{{ info.whois }}</pre>
-      </div>
-    {% endif %}
-  </div>
+                <p><strong>Reverse DNS:</strong> {{ info.reverse_dns }}</p>
+            {% endif %}
+        </div>
+    </div>
+
 </body>
 </html>
