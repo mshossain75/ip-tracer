@@ -5,7 +5,7 @@ import requests
 import subprocess
 import os
 import shutil
-import re
+
 from dotenv import load_dotenv
 from flask import make_response
 from xhtml2pdf import pisa
@@ -29,20 +29,12 @@ def is_private_ip(ip):
     except ValueError:
         return False
 
-def is_valid_ip(ip):
-    try:
-        ipaddress.ip_address(ip)
-        return True
-    except ValueError:
-        return False
-
 def geolocate_ip(ip):
     try:
         headers = {"Authorization": f"Bearer {IPINFO_TOKEN}"}
         r = requests.get(f"https://ipinfo.io/{ip}/json", headers=headers, timeout=5)
         return r.json()
-    except Exception as e:
-        print(f"[GeoLocate Error] {e}")
+    except:
         return {}
 
 def whois_lookup(ip):
@@ -57,15 +49,13 @@ def whois_lookup(ip):
                 if any(k in key for k in ['orgname', 'organisation', 'abuse', 'admin', 'tech', 'email']):
                     info[key] = val
         return info
-    except Exception as e:
-        print(f"[Whois Error] {e}")
+    except:
         return {}
 
 def reverse_dns(ip):
     try:
         return socket.gethostbyaddr(ip)[0]
-    except Exception as e:
-        print(f"[Reverse DNS Error] {e}")
+    except:
         return "No PTR record"
 
 def check_blacklist(ip):
@@ -81,81 +71,75 @@ def check_blacklist(ip):
         }
         r = requests.get(url, headers=headers, params=params, timeout=10)
         return r.json().get("data", {})
-    except Exception as e:
-        print(f"[AbuseIPDB Error] {e}")
+    except:
         return {}
 
 def shodan_lookup(ip):
     try:
         r = requests.get(f"https://api.shodan.io/shodan/host/{ip}?key={SHODAN_API_KEY}", timeout=10)
         return r.json()
-    except Exception as e:
-        print(f"[Shodan Error] {e}")
+    except:
         return {}
-
 
 def viewdns_port_scan(ip):
     try:
-        url = f"https://api.viewdns.info/portscan/?host={ip}&apikey={VIEWDNS_KEY}&output=json"
+        key = os.getenv("VIEWDNS_KEY")
+        url = f"https://api.viewdns.info/portscan/?host={ip}&apikey={key}&output=json"
         r = requests.get(url, timeout=10)
         data = r.json()
+
         ports = data.get("response", {}).get("port", [])
         return [f"{p['number']}/tcp - {p['status']}" for p in ports] if ports else ["No open ports found."]
-    except Exception as e:
-        print(f"[ViewDNS Port Scan Error] {e}")
+    except:
         return ["ViewDNS Port Scan failed."]
 
 def viewdns_reverse_ip(ip):
     try:
-        url = f"https://api.viewdns.info/reverseip/?host={ip}&apikey={VIEWDNS_KEY}&output=json"
+        key = os.getenv("VIEWDNS_KEY")
+        url = f"https://api.viewdns.info/reverseip/?host={ip}&apikey={key}&output=json"
         r = requests.get(url, timeout=10)
         return r.json().get("response", {}).get("domains", [])
-    except Exception as e:
-        print(f"[ViewDNS Reverse IP Error] {e}")
+    except:
         return []
 
 def viewdns_http_headers(ip):
     try:
-        url = f"https://api.viewdns.info/httpheaders/?url={ip}&apikey={VIEWDNS_KEY}&output=json"
+        key = os.getenv("VIEWDNS_KEY")
+        url = f"https://api.viewdns.info/httpheaders/?url={ip}&apikey={key}&output=json"
         r = requests.get(url, timeout=10)
-        headers = r.json().get("response", {}).get("headers", {})
-        return headers if isinstance(headers, dict) else {}
-    except Exception as e:
-        print(f"[ViewDNS Headers Error] {e}")
+        return r.json().get("response", {}).get("headers", {})
+    except:
         return {}
-
 
 def viewdns_dns_records(ip):
     try:
-        url = f"https://api.viewdns.info/dnsrecord/?domain={ip}&apikey={VIEWDNS_KEY}&output=json"
+        key = os.getenv("VIEWDNS_KEY")
+        url = f"https://api.viewdns.info/dnsrecord/?domain={ip}&apikey={key}&output=json"
         r = requests.get(url, timeout=10)
         return r.json().get("response", {}).get("records", [])
-    except Exception as e:
-        print(f"[ViewDNS DNS Records Error] {e}")
+    except:
         return []
 
 def ipqs_lookup(ip):
     try:
-        url = f"https://ipqualityscore.com/api/json/ip/{IPQS_KEY}/{ip}"
+        key = os.getenv("IPQS_API_KEY")
+        url = f"https://ipqualityscore.com/api/json/ip/{key}/{ip}"
         r = requests.get(url, timeout=10)
         return r.json()
-    except Exception as e:
-        print(f"[IPQS Error] {e}")
+    except:
         return {}
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        ip = request.form.get("ip", "").strip()
+        ip = request.form.get("ip")
         if not ip:
             return render_template("index.html", error="Please enter an IP address.")
-        if not is_valid_ip(ip):
-            return render_template("index.html", error="Invalid IP address format.")
 
-        result = {
-            "ip": ip,
-            "is_private": is_private_ip(ip)
-        }
+        result = {}
+        result["ip"] = ip
+        result["is_private"] = is_private_ip(ip)
 
         if not result["is_private"]:
             result["reverse_dns"] = reverse_dns(ip)
@@ -163,12 +147,14 @@ def index():
             result["whois"] = whois_lookup(ip)
             result["blacklist"] = check_blacklist(ip)
             result["shodan"] = shodan_lookup(ip)
+            result["nmap"] = port_scan(ip)
             result["viewdns_reverse_ip"] = viewdns_reverse_ip(ip)
             result["viewdns_port_scan"] = viewdns_port_scan(ip)
             result["viewdns_http_headers"] = viewdns_http_headers(ip)
             result["viewdns_dns_records"] = viewdns_dns_records(ip)
             result["ipqs_lookup"] = ipqs_lookup(ip)
 
+	
         return render_template("index.html", result=result)
 
     return render_template("index.html")
@@ -208,7 +194,6 @@ def download_pdf():
     response.headers["Content-Type"] = "application/pdf"
     response.headers["Content-Disposition"] = f"attachment; filename=IP_Report_{ip}.pdf"
     return response
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
