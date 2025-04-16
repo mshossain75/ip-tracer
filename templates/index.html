@@ -2,84 +2,63 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IP Trace</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .form-container {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            font-size: 14px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 14px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        pre {
-            background-color: #f4f4f4;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .result {
-            margin-top: 20px;
-        }
-    </style>
+    <title>IP OSINT Toolkit</title>
 </head>
 <body>
+    <h1>IP OSINT Lookup Tool</h1>
 
-    <div class="container">
-        <h1>IP Trace</h1>
-        <div class="form-container">
-            <form method="POST">
-                <label for="ip">Enter IP address or domain:</label>
-                <input type="text" id="ip" name="ip" required>
-                <button type="submit">Trace IP</button>
-            </form>
-        </div>
+    <form method="POST">
+        <input type="text" name="ip" placeholder="Enter IP address">
+        <button type="submit">Lookup</button>
+    </form>
 
-        <div class="result">
-            {% if info %}
-                <h2>Results for {{ info.ip }}</h2>
-                <p><strong>Is Public IP:</strong> {{ info.is_public }}</p>
-                <p><strong>Geolocation:</strong> {{ info.geo.city }}, {{ info.geo.regionName }}, {{ info.geo.country }}</p>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
 
-                {% if info.whois %}
-                    <h3>WHOIS Information:</h3>
-                    <pre style="white-space: pre-wrap;">{{ info.whois }}</pre>
-                {% else %}
-                    <p>WHOIS information not available.</p>
+    {% if result %}
+        <h2>Result for {{ result.ip }}</h2>
+
+        {% if result.is_private %}
+            <p><strong>This is a Private IP Address.</strong></p>
+        {% else %}
+            <h3>Reverse DNS:</h3>
+            <p>{{ result.reverse_dns }}</p>
+
+            <h3>Geolocation:</h3>
+            <ul>
+                {% for k, v in result.geo.items() %}
+                    <li><strong>{{ k }}:</strong> {{ v }}</li>
+                {% endfor %}
+            </ul>
+
+            <h3>WHOIS Info:</h3>
+            <ul>
+                {% for k, v in result.whois.items() %}
+                    <li><strong>{{ k }}:</strong> {{ v }}</li>
+                {% endfor %}
+            </ul>
+
+            <h3>AbuseIPDB:</h3>
+            <ul>
+                {% for k, v in result.blacklist.items() %}
+                    <li><strong>{{ k }}:</strong> {{ v }}</li>
+                {% endfor %}
+            </ul>
+
+            <h3>Shodan:</h3>
+            <ul>
+                {% if result.shodan.hostnames %}
+                    <li><strong>Hostnames:</strong> {{ result.shodan.hostnames }}</li>
                 {% endif %}
+                {% if result.shodan.ports %}
+                    <li><strong>Ports:</strong> {{ result.shodan.ports }}</li>
+                {% endif %}
+            </ul>
 
-                <p><strong>Reverse DNS:</strong> {{ info.reverse_dns }}</p>
-            {% endif %}
-        </div>
-    </div>
-
+            <h3>Nmap Scan:</h3>
+            <pre>{{ result.nmap }}</pre>
+        {% endif %}
+    {% endif %}
 </body>
 </html>
