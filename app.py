@@ -93,15 +93,6 @@ def shodan_lookup(ip):
         print(f"[Shodan Error] {e}")
         return {}
 
-def port_scan(ip):
-    try:
-        if not shutil.which("nmap"):
-            return "nmap is not installed."
-        result = subprocess.check_output(["nmap", "-Pn", "-T4", "-F", ip], stderr=subprocess.DEVNULL, text=True)
-        return result
-    except subprocess.CalledProcessError as e:
-        print(f"[Nmap Error] {e}")
-        return "Port scan failed."
 
 def viewdns_port_scan(ip):
     try:
@@ -127,10 +118,12 @@ def viewdns_http_headers(ip):
     try:
         url = f"https://api.viewdns.info/httpheaders/?url={ip}&apikey={VIEWDNS_KEY}&output=json"
         r = requests.get(url, timeout=10)
-        return r.json().get("response", {}).get("headers", {})
+        headers = r.json().get("response", {}).get("headers", {})
+        return headers if isinstance(headers, dict) else {}
     except Exception as e:
         print(f"[ViewDNS Headers Error] {e}")
         return {}
+
 
 def viewdns_dns_records(ip):
     try:
@@ -170,7 +163,6 @@ def index():
             result["whois"] = whois_lookup(ip)
             result["blacklist"] = check_blacklist(ip)
             result["shodan"] = shodan_lookup(ip)
-            result["nmap"] = port_scan(ip)
             result["viewdns_reverse_ip"] = viewdns_reverse_ip(ip)
             result["viewdns_port_scan"] = viewdns_port_scan(ip)
             result["viewdns_http_headers"] = viewdns_http_headers(ip)
@@ -198,7 +190,6 @@ def download_pdf():
         result["whois"] = whois_lookup(ip)
         result["blacklist"] = check_blacklist(ip)
         result["shodan"] = shodan_lookup(ip)
-        result["nmap"] = port_scan(ip)
         result["viewdns_reverse_ip"] = viewdns_reverse_ip(ip)
         result["viewdns_port_scan"] = viewdns_port_scan(ip)
         result["viewdns_http_headers"] = viewdns_http_headers(ip)
