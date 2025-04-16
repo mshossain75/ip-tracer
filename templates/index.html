@@ -2,110 +2,133 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IP Intelligence & Recon Tool</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Tracer Tool | All in One Security</title>
+    <meta name="description" content="Trace and analyze any IP address with our advanced IP Tracer tool. Powered by AI1Security and created by Leetsec Sarwar.">
+    <meta name="keywords" content="IP tracer, IP lookup, IP address tracker, geolocation, whois, security tools, All in One Security">
+    <meta name="author" content="Leetsec Sarwar, All in One Security">
+    <link rel="canonical" href="https://ai1security.net/ip-tracer">
 
-    <!-- Bootstrap 5 CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- html2pdf.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="IP Tracer Tool | All in One Security">
+    <meta property="og:description" content="Track and analyze IP addresses with geolocation, blacklist check, whois lookup, and more.">
+    <meta property="og:url" content="https://ai1security.net/ip-tracer">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://ai1security.net/assets/ip-tracer-banner.png">
 
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="IP Tracer Tool by All in One Security">
+    <meta name="twitter:description" content="Find geolocation, DNS, reverse IP, and more using our secure tracer tool.">
+    <meta name="twitter:image" content="https://ai1security.net/assets/ip-tracer-banner.png">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #f8f9fa;
-            padding-top: 40px;
+            background: #f9f9f9;
+            font-family: 'Segoe UI', sans-serif;
         }
         .container {
-            max-width: 900px;
+            max-width: 960px;
+            padding: 40px 20px;
         }
-        .card {
+        .result-box {
+            background: #fff;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .tab-content pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin-top: 30px;
         }
         footer {
-            margin-top: 40px;
             text-align: center;
-            font-size: 0.9em;
-            color: #6c757d;
-        }
-        #download-btn {
-            float: right;
+            padding: 20px;
+            color: #888;
+            margin-top: 40px;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2 class="text-center mb-4">🔍 IP Intelligence & Reconnaissance</h2>
 
-    <form method="post" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="ip" class="form-control" placeholder="Enter an IP address" required>
-            <button class="btn btn-primary" type="submit">Analyze</button>
-        </div>
+    <div class="container">
+        <h1 class="mb-4 text-center">🔍 IP Tracer Tool</h1>
+        <p class="text-center text-muted">Analyze IP addresses with geolocation, blacklist lookup, whois data, Shodan info, and more.</p>
+
+        <form method="POST">
+            <div class="input-group mb-3">
+                <input type="text" name="ip" class="form-control" placeholder="Enter an IP address..." required>
+                <button class="btn btn-primary" type="submit">Trace IP</button>
+            </div>
+        </form>
+
         {% if error %}
-            <div class="text-danger mt-2">{{ error }}</div>
+            <div class="alert alert-danger">{{ error }}</div>
         {% endif %}
-    </form>
 
-    {% if result %}
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5>Results for: <strong>{{ result.ip }}</strong></h5>
-        <button class="btn btn-outline-secondary btn-sm" id="download-btn">Download PDF</button>
-    </div>
+        {% if result %}
+        <div class="result-box">
+            <h4>IP Trace Result for {{ result.ip }}</h4>
+            <p><strong>Private IP:</strong> {{ result.is_private }}</p>
 
-    <div class="card" id="result-section">
-        <div class="card-body">
-            {% if result.is_private %}
-                <p class="text-warning">This is a private IP address. External lookups are skipped.</p>
-            {% else %}
-                <ul class="nav nav-tabs" id="ipTabs" role="tablist">
-                    {% for key in result if key != 'ip' and key != 'is_private' %}
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link {% if loop.first %}active{% endif %}" id="{{ key }}-tab" data-bs-toggle="tab" data-bs-target="#{{ key }}" type="button" role="tab">
-                            {{ key.replace('_', ' ').title() }}
-                        </button>
-                    </li>
+            {% if not result.is_private %}
+                <p><strong>Reverse DNS:</strong> {{ result.reverse_dns }}</p>
+
+                <h5 class="mt-4">🌍 Geolocation</h5>
+                <ul>
+                    {% for k, v in result.geo.items() %}
+                        <li><strong>{{ k | capitalize }}:</strong> {{ v }}</li>
                     {% endfor %}
                 </ul>
 
-                <div class="tab-content mt-3" id="ipTabContent">
-                    {% for key, value in result.items() if key != 'ip' and key != 'is_private' %}
-                    <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="{{ key }}" role="tabpanel">
-                        <pre>{{ value | tojson(indent=2) }}</pre>
-                    </div>
+                <h5 class="mt-4">📡 Whois</h5>
+                <ul>
+                    {% for k, v in result.whois.items() %}
+                        <li><strong>{{ k }}:</strong> {{ v }}</li>
                     {% endfor %}
-                </div>
+                </ul>
+
+                <h5 class="mt-4">🚨 Blacklist</h5>
+                <ul>
+                    {% for k, v in result.blacklist.items() %}
+                        <li><strong>{{ k }}:</strong> {{ v }}</li>
+                    {% endfor %}
+                </ul>
+
+                <h5 class="mt-4">🔎 Shodan</h5>
+                <pre>{{ result.shodan | tojson(indent=2) }}</pre>
+
+                <h5 class="mt-4">⚙️ Nmap Scan</h5>
+                <pre>{{ result.nmap }}</pre>
+
+                <h5 class="mt-4">🔁 Reverse IP</h5>
+                <ul>{% for domain in result.viewdns_reverse_ip %}<li>{{ domain }}</li>{% endfor %}</ul>
+
+                <h5 class="mt-4">🔓 Port Scan</h5>
+                <ul>{% for port in result.viewdns_port_scan %}<li>{{ port }}</li>{% endfor %}</ul>
+
+                <h5 class="mt-4">📥 HTTP Headers</h5>
+                <ul>{% for k, v in result.viewdns_http_headers.items() %}
+                    <li><strong>{{ k }}:</strong> {{ v }}</li>
+                {% endfor %}</ul>
+
+                <h5 class="mt-4">📄 DNS Records</h5>
+                <ul>{% for record in result.viewdns_dns_records %}<li>{{ record }}</li>{% endfor %}</ul>
+
+                <h5 class="mt-4">🧠 IP Quality Score</h5>
+                <pre>{{ result.ipqs_lookup | tojson(indent=2) }}</pre>
+
+                <!-- Download PDF -->
+                <form method="POST" action="/download" class="mt-4">
+                    <input type="hidden" name="ip" value="{{ result.ip }}">
+                    <button type="submit" class="btn btn-outline-success">⬇️ Download PDF Report</button>
+                </form>
             {% endif %}
         </div>
+        {% endif %}
     </div>
-    {% endif %}
-</div>
 
-<footer class="mt-5">
-    &copy; {{ 2025 }} All in One Security | Built by Md Sarwar
-</footer>
+    <footer>
+        &copy; {{ 2025 }} All in One Security. Created by <strong>Leetsec Sarwar</strong>.
+    </footer>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- PDF Export Script -->
-<script>
-    document.getElementById("download-btn")?.addEventListener("click", () => {
-        const element = document.getElementById("result-section");
-        const opt = {
-            margin: 0.5,
-            filename: 'ip_report_{{ result.ip if result and result.ip else "report" }}.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(element).save();
-    });
-</script>
 </body>
 </html>
