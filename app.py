@@ -1,14 +1,12 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, jsonify
 import ipaddress
 import socket
 import requests
-import whois
-import argparse
 import subprocess
-import re
 
 app = Flask(__name__)
 
+# Helper Functions
 def is_private_ip(ip):
     try:
         return ipaddress.ip_address(ip).is_private
@@ -45,15 +43,12 @@ def reverse_dns(ip):
 
 def check_blacklist(ip):
     try:
-        url = f"https://api.abuseipdb.com/api/v2/check"
+        url = "https://api.abuseipdb.com/api/v2/check"
         headers = {
-            'Key': 'd00da4abb8e83e9181e591b487bd51ffb465807c0bceef29b407143495e69eaa15ae55f40b34288c',  # Replace with your real key
+            'Key': 'd00da4abb8e83e9181e591b487bd51ffb465807c0bceef29b407143495e69eaa15ae55f40b34288c',  # Replace with real key
             'Accept': 'application/json'
         }
-        params = {
-            'ipAddress': ip,
-            'maxAgeInDays': 90
-        }
+        params = {'ipAddress': ip, 'maxAgeInDays': 90}
         r = requests.get(url, headers=headers, params=params)
         return r.json().get("data", {})
     except:
@@ -61,7 +56,7 @@ def check_blacklist(ip):
 
 def shodan_lookup(ip):
     try:
-        SHODAN_API_KEY = "d7XPNRz9bR3NDW81NxI0U2MHmbKQqYLr"  # Replace
+        SHODAN_API_KEY = "d7XPNRz9bR3NDW81NxI0U2MHmbKQqYLr"  # Replace with real key
         r = requests.get(f"https://api.shodan.io/shodan/host/{ip}?key={SHODAN_API_KEY}")
         return r.json()
     except:
@@ -74,68 +69,73 @@ def port_scan(ip):
     except:
         return "Port scan failed."
 
-def main():
-    parser = argparse.ArgumentParser(description="IP OSINT Toolkit")
-    parser.add_argument("ip", help="Target IP Address")
-    args = parser.parse_args()
-    ip = args.ip
+# Routes
+@app.route('/')
+def home():
+    return "🛡️ IP OSINT Toolkit API is Running"
 
-    print(f"\n🔎 IP: {ip}")
-    print("--------------------------------------------------")
+@app.route('/api/check-ip')
+def check_ip():
+    ip = request.args.get("ip")
+    if not ip:
+        return jsonify({"error": "IP address is required."}), 400
+
+    return jsonify({
+        "ip": ip,
+        "is_private": is_private_ip(ip)
+    })
+
+@app.route('/api/geolocation')
+def api_geolocation():
+    ip = request.args.get("ip")
+    return jsonify(geolocate_ip(ip))
+
+@app.route('/api/whois')
+def api_whois():
+    ip = request.args.get("ip")
+    return jsonify(whois_lookup(ip))
+
+@app.route('/api/reverse-dns')
+def api_reverse_dns():
+    ip = request.args.get("ip")
+    return jsonify({"ip": ip, "ptr_record": reverse_dns(ip)})
+
+@app.route('/api/blacklist')
+def api_blacklist():
+    ip = request.args.get("ip")
+    return jsonify(check_blacklist(ip))
+
+@app.route('/api/shodan')
+def api_shodan():
+    ip = request.args.get("ip")
+    return jsonify(shodan_lookup(ip))
+
+@app.route('/api/port-scan')
+def api_port_scan():
+    ip = request.args.get("ip")
+    return jsonify({"result": port_scan(ip)})
+
+@app.route('/api/full-osint')
+def full_osint():
+    ip = request.args.get("ip")
+    if not ip:
+        return jsonify({"error": "IP address is required."}), 400
 
     if is_private_ip(ip):
-        print("🔒 This is a **Private IP Address**.\n")
-        return
+        return jsonify({"ip": ip, "note": "Private IP - OSINT not performed."})
 
-    print("🌍 Public IP Detected. Running OSINT...\n")
+    return jsonify({
+        "ip": ip,
+        "reverse_dns": reverse_dns(ip),
+        "geolocation": geolocate_ip(ip),
+        "whois": whois_lookup(ip),
+        "blacklist": check_blacklist(ip),
+        "shodan": shodan_lookup(ip),
+        "port_scan": port_scan(ip)
+    })
 
-    # Reverse DNS
-    print(f"📡 Reverse DNS: {reverse_dns(ip)}")
-
-    # Geolocation
-    geo = geolocate_ip(ip)
-    if geo:
-        print("\n📍 Geolocation Info (via ipinfo.io):")
-        for k in ['ip', 'city', 'region', 'country', 'loc', 'org', 'timezone']:
-            if geo.get(k):
-                print(f"  {k.capitalize():12}: {geo[k]}")
-
-    # WHOIS
-    whois = whois_lookup(ip)
-    if whois:
-        print("\n📬 WHOIS Contact Info:")
-        for k, v in whois.items():
-            print(f"  {k.capitalize():15}: {v}")
-
-    # AbuseIPDB Check
-    abuse = check_blacklist(ip)
-    if abuse:
-        print("\n🚨 Reputation (via AbuseIPDB):")
-        print(f"  ISP             : {abuse.get('isp')}")
-        print(f"  Domain          : {abuse.get('domain')}")
-        print(f"  Total Reports   : {abuse.get('totalReports')}")
-        print(f"  Abuse Score     : {abuse.get('abuseConfidenceScore')}%")
-        print(f"  Last Reported   : {abuse.get('lastReportedAt')}")
-
-    # Shodan Lookup
-    shodan = shodan_lookup(ip)
-    if shodan and isinstance(shodan, dict) and shodan.get("ports"):
-        print("\n🛡️ Shodan Data:")
-        print(f"  Hostnames       : {shodan.get('hostnames')}")
-        print(f"  Open Ports      : {shodan.get('ports')}")
-        for service in shodan.get("data", []):
-            print(f"  - Port {service.get('port')}: {service.get('product', '')} {service.get('version', '')}")
-
-    # Fast Port Scan
-    print("\n🧪 Running Quick Nmap Port Scan:")
-    print(port_scan(ip))
-
-    print("--------------------------------------------------")
-    print("✅ OSINT Complete.\n")
-
+# Run Server
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
-
