@@ -147,7 +147,6 @@ def index():
             result["whois"] = whois_lookup(ip)
             result["blacklist"] = check_blacklist(ip)
             result["shodan"] = shodan_lookup(ip)
-            result["nmap"] = port_scan(ip)
             result["viewdns_reverse_ip"] = viewdns_reverse_ip(ip)
             result["viewdns_port_scan"] = viewdns_port_scan(ip)
             result["viewdns_http_headers"] = viewdns_http_headers(ip)
