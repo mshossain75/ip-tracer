@@ -1,5 +1,6 @@
 Flask
 requests
+ipaddress
 python-dotenv
-python-whois
-pip install xhtml2pdf
+xhtml2pdf
+shodan
