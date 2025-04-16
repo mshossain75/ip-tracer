@@ -75,6 +75,8 @@ def shodan_lookup(ip):
 
 def port_scan(ip):
     try:
+        if not shutil.which("nmap"):
+            return "nmap is not installed."
         result = subprocess.check_output(["nmap", "-Pn", "-T4", "-F", ip], stderr=subprocess.DEVNULL, text=True)
         return result
     except subprocess.CalledProcessError:
