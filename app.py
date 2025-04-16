@@ -4,6 +4,7 @@ import socket
 import requests
 import subprocess
 import os
+import shutil
 from dotenv import load_dotenv
 
 load_dotenv()
