@@ -2,63 +2,110 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IP OSINT Toolkit</title>
+    <title>IP Intelligence & Recon Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- html2pdf.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 40px;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .tab-content pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        #download-btn {
+            float: right;
+        }
+    </style>
 </head>
 <body>
-    <h1>IP OSINT Lookup Tool</h1>
+<div class="container">
+    <h2 class="text-center mb-4">🔍 IP Intelligence & Reconnaissance</h2>
 
-    <form method="POST">
-        <input type="text" name="ip" placeholder="Enter IP address">
-        <button type="submit">Lookup</button>
+    <form method="post" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="ip" class="form-control" placeholder="Enter an IP address" required>
+            <button class="btn btn-primary" type="submit">Analyze</button>
+        </div>
+        {% if error %}
+            <div class="text-danger mt-2">{{ error }}</div>
+        {% endif %}
     </form>
 
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
-
     {% if result %}
-        <h2>Result for {{ result.ip }}</h2>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5>Results for: <strong>{{ result.ip }}</strong></h5>
+        <button class="btn btn-outline-secondary btn-sm" id="download-btn">Download PDF</button>
+    </div>
 
-        {% if result.is_private %}
-            <p><strong>This is a Private IP Address.</strong></p>
-        {% else %}
-            <h3>Reverse DNS:</h3>
-            <p>{{ result.reverse_dns }}</p>
+    <div class="card" id="result-section">
+        <div class="card-body">
+            {% if result.is_private %}
+                <p class="text-warning">This is a private IP address. External lookups are skipped.</p>
+            {% else %}
+                <ul class="nav nav-tabs" id="ipTabs" role="tablist">
+                    {% for key in result if key != 'ip' and key != 'is_private' %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if loop.first %}active{% endif %}" id="{{ key }}-tab" data-bs-toggle="tab" data-bs-target="#{{ key }}" type="button" role="tab">
+                            {{ key.replace('_', ' ').title() }}
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
 
-            <h3>Geolocation:</h3>
-            <ul>
-                {% for k, v in result.geo.items() %}
-                    <li><strong>{{ k }}:</strong> {{ v }}</li>
-                {% endfor %}
-            </ul>
-
-            <h3>WHOIS Info:</h3>
-            <ul>
-                {% for k, v in result.whois.items() %}
-                    <li><strong>{{ k }}:</strong> {{ v }}</li>
-                {% endfor %}
-            </ul>
-
-            <h3>AbuseIPDB:</h3>
-            <ul>
-                {% for k, v in result.blacklist.items() %}
-                    <li><strong>{{ k }}:</strong> {{ v }}</li>
-                {% endfor %}
-            </ul>
-
-            <h3>Shodan:</h3>
-            <ul>
-                {% if result.shodan.hostnames %}
-                    <li><strong>Hostnames:</strong> {{ result.shodan.hostnames }}</li>
-                {% endif %}
-                {% if result.shodan.ports %}
-                    <li><strong>Ports:</strong> {{ result.shodan.ports }}</li>
-                {% endif %}
-            </ul>
-
-            <h3>Nmap Scan:</h3>
-            <pre>{{ result.nmap }}</pre>
-        {% endif %}
+                <div class="tab-content mt-3" id="ipTabContent">
+                    {% for key, value in result.items() if key != 'ip' and key != 'is_private' %}
+                    <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="{{ key }}" role="tabpanel">
+                        <pre>{{ value | tojson(indent=2) }}</pre>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
     {% endif %}
+</div>
+
+<footer class="mt-5">
+    &copy; {{ 2025 }} All in One Security | Built by Md Sarwar
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- PDF Export Script -->
+<script>
+    document.getElementById("download-btn")?.addEventListener("click", () => {
+        const element = document.getElementById("result-section");
+        const opt = {
+            margin: 0.5,
+            filename: 'ip_report_{{ result.ip if result and result.ip else "report" }}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
+    });
+</script>
 </body>
 </html>
