@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IP Tracer Tool | All in One Security</title>
+    <title>🔍 IP Intelligence & Reconnaissance</title>
     <meta name="description" content="Trace and analyze any IP address with our advanced IP Tracer tool. Powered by AI1Security and created by Leetsec Sarwar.">
     <meta name="keywords" content="IP tracer, IP lookup, IP address tracker, geolocation, whois, security tools, All in One Security">
     <meta name="author" content="Leetsec Sarwar, All in One Security">
@@ -96,8 +96,6 @@
                 <h5 class="mt-4">🔎 Shodan</h5>
                 <pre>{{ result.shodan | tojson(indent=2) }}</pre>
 
-                <h5 class="mt-4">⚙️ Nmap Scan</h5>
-                <pre>{{ result.nmap }}</pre>
 
                 <h5 class="mt-4">🔁 Reverse IP</h5>
                 <ul>{% for domain in result.viewdns_reverse_ip %}<li>{{ domain }}</li>{% endfor %}</ul>
