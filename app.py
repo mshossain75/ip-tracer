@@ -5,6 +5,7 @@ import requests
 import subprocess
 import os
 import shutil
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -82,6 +83,54 @@ def port_scan(ip):
         return result
     except subprocess.CalledProcessError:
         return "Port scan failed."
+def viewdns_port_scan(ip):
+    try:
+        key = os.getenv("b01124d6abbaf4956d44412d6512f7ece2e687d1")
+        url = f"https://api.viewdns.info/portscan/?host={ip}&apikey={key}&output=json"
+        r = requests.get(url, timeout=10)
+        data = r.json()
+
+        ports = data.get("response", {}).get("port", [])
+        return [f"{p['number']}/tcp - {p['status']}" for p in ports] if ports else ["No open ports found."]
+    except:
+        return ["ViewDNS Port Scan failed."]
+
+def viewdns_reverse_ip(ip):
+    try:
+        key = os.getenv("b01124d6abbaf4956d44412d6512f7ece2e687d1")
+        url = f"https://api.viewdns.info/reverseip/?host={ip}&apikey={key}&output=json"
+        r = requests.get(url, timeout=10)
+        return r.json().get("response", {}).get("domains", [])
+    except:
+        return []
+
+def viewdns_http_headers(ip):
+    try:
+        key = os.getenv("b01124d6abbaf4956d44412d6512f7ece2e687d1")
+        url = f"https://api.viewdns.info/httpheaders/?url={ip}&apikey={key}&output=json"
+        r = requests.get(url, timeout=10)
+        return r.json().get("response", {}).get("headers", {})
+    except:
+        return {}
+
+def viewdns_dns_records(ip):
+    try:
+        key = os.getenv("b01124d6abbaf4956d44412d6512f7ece2e687d1")
+        url = f"https://api.viewdns.info/dnsrecord/?domain={ip}&apikey={key}&output=json"
+        r = requests.get(url, timeout=10)
+        return r.json().get("response", {}).get("records", [])
+    except:
+        return []
+
+def ipqs_lookup(ip):
+    try:
+        key = os.getenv("bAe76K0k9YYnphSZHnE13zzLNa896zwu")
+        url = f"https://ipqualityscore.com/api/json/ip/{key}/{ip}"
+        r = requests.get(url, timeout=10)
+        return r.json()
+    except:
+        return {}
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -101,6 +150,13 @@ def index():
             result["blacklist"] = check_blacklist(ip)
             result["shodan"] = shodan_lookup(ip)
             result["nmap"] = port_scan(ip)
+            result["viewdns_reverse_ip"] = viewdns_reverse_ip(ip)
+            result["viewdns_port_scan"] = viewdns_port_scan(ip)
+            result["viewdns_http_headers"] = viewdns_http_headers(ip)
+            result["viewdns_dns_records"] = viewdns_dns_records(ip)
+            result["ipqs_lookup"] = ipqs_lookup(ip)
+
+	
         return render_template("index.html", result=result)
 
     return render_template("index.html")
