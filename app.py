@@ -107,7 +107,8 @@ def viewdns_http_headers(ip):
         key = os.getenv("VIEWDNS_KEY")
         url = f"https://api.viewdns.info/httpheaders/?url={ip}&apikey={key}&output=json"
         r = requests.get(url, timeout=10)
-        return r.json().get("response", {}).get("headers", {})
+	headers = r.json().get("response", {}).get("headers", {})
+        return headers if isinstance(headers, dict) else {}
     except:
         return {}
 
