@@ -1,22 +1,24 @@
-# Use official Python image
+# Use an official Python image
 FROM python:3.11-slim
 
-# Install required Linux packages
+# Install system dependencies including nmap
 RUN apt-get update && \
-    apt-get install -y nmap whois curl iputils-ping && \
-    apt-get clean
+    apt-get install -y nmap whois && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy all project files to container
-COPY . .
-
-# Install Python dependencies
+# Copy requirements and install them
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the Flask app port
+# Copy project files
+COPY . .
+
+# Expose the port the app runs on
 EXPOSE 10000
 
-# Command to run the app
+# Start the Flask app
 CMD ["python", "app.py"]
