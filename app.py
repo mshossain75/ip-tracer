@@ -13,7 +13,7 @@ app = Flask(__name__)
 # Load API keys from environment variables
 IPINFO_TOKEN = os.getenv("92fad0c184571d")
 ABUSEIPDB_KEY = os.getenv("d00da4abb8e83e9181e591b487bd51ffb465807c0bceef29b407143495e69eaa15ae55f40b34288c")
-SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
+SHODAN_API_KEY = os.getenv("d7XPNRz9bR3NDW81NxI0U2MHmbKQqYLr")
 
 def is_private_ip(ip):
     try:
@@ -23,7 +23,7 @@ def is_private_ip(ip):
 
 def geolocate_ip(ip):
     try:
-        headers = {"Authorization": f"Bearer {92fad0c184571d}"}
+        headers = {"Authorization": f"Bearer {'92fad0c184571d'}"}
         r = requests.get(f"https://ipinfo.io/{ip}/json", headers=headers, timeout=5)
         return r.json()
     except:
@@ -54,7 +54,7 @@ def check_blacklist(ip):
     try:
         url = "https://api.abuseipdb.com/api/v2/check"
         headers = {
-            'Key': d00da4abb8e83e9181e591b487bd51ffb465807c0bceef29b407143495e69eaa15ae55f40b34288c,
+            'Key': 'd00da4abb8e83e9181e591b487bd51ffb465807c0bceef29b407143495e69eaa15ae55f40b34288c',
             'Accept': 'application/json'
         }
         params = {
@@ -68,7 +68,7 @@ def check_blacklist(ip):
 
 def shodan_lookup(ip):
     try:
-        r = requests.get(f"https://api.shodan.io/shodan/host/{ip}?key={d7XPNRz9bR3NDW81NxI0U2MHmbKQqYLr}", timeout=10)
+        r = requests.get(f"https://api.shodan.io/shodan/host/{ip}?key={'d7XPNRz9bR3NDW81NxI0U2MHmbKQqYLr'}", timeout=10)
         return r.json()
     except:
         return {}
