@@ -28,18 +28,22 @@ def trace():
         info["ip"] = ip
         info["is_public"] = is_public_ip(ip)
         info["geo"] = get_geolocation(ip)
+
+        # WHOIS lookup with error handling
         try:
-            info["whois"] = whois.whois(ip)
-        except:
-            info["whois"] = "Error fetching WHOIS"
+            domain_info = whois.whois(ip)
+            info["whois"] = str(domain_info)
+        except Exception as e:
+            print(f"WHOIS lookup failed: {e}")
+            info["whois"] = None
+
+        # Reverse DNS lookup
         try:
             info["reverse_dns"] = socket.gethostbyaddr(ip)[0]
         except:
             info["reverse_dns"] = "N/A"
+
     return render_template("index.html", info=info)
 
-# ✅ THIS IS THE FIX FOR RENDER
 if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
