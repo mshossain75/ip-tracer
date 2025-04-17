@@ -5,7 +5,7 @@ import requests
 import subprocess
 import os
 import shutil
-
+from flask import current_app
 from dotenv import load_dotenv
 from flask import make_response
 from xhtml2pdf import pisa
@@ -166,8 +166,11 @@ def download_pdf():
         result["viewdns_port_scan"] = viewdns_port_scan(ip)
         result["ipqs_lookup"] = ipqs_lookup(ip)
 
-    # Render HTML from template
-    html = render_template("pdf_template.html", result=result)
+     # Absolute path to logo file for xhtml2pdf
+    logo_path = os.path.join(current_app.root_path, 'static', 'images', 'logo.png')
+
+    # Render HTML
+    html = render_template("pdf_template.html", result=result, logo_path=logo_path)
     pdf_stream = BytesIO()
     pisa_status = pisa.CreatePDF(html, dest=pdf_stream)
 
