@@ -117,20 +117,6 @@
     </div>
 
     <div class="section">
-        <h2>HTTP Headers</h2>
-        {% for k, v in result.viewdns_http_headers.items() %}
-            <p><strong>{{ k }}:</strong> {{ v }}</p>
-        {% endfor %}
-    </div>
-
-    <div class="section">
-        <h2>DNS Records</h2>
-        {% for record in result.viewdns_dns_records %}
-            <p>{{ record }}</p>
-        {% endfor %}
-    </div>
-
-    <div class="section">
         <h2>IPQS Lookup</h2>
         <pre>{{ result.ipqs_lookup | tojson(indent=2) }}</pre>
     </div>
