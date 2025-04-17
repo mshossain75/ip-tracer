@@ -167,7 +167,7 @@ def download_pdf():
         result["ipqs_lookup"] = ipqs_lookup(ip)
 
      # Absolute path to logo file for xhtml2pdf
-    logo_path = os.path.join(current_app.root_path, 'static', 'images', 'logo.png')
+    logo_path = os.path.join(current_app.root_path, 'static/images/logo.png')
 
     # Render HTML
     html = render_template("pdf_template.html", result=result, logo_path=logo_path)
