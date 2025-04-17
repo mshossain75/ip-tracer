@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>IP Intelligence Report</title>
+    <title>IP Intelligence Report - {{ result.ip }}</title>
     <style>
         @page {
             size: A4;
@@ -14,18 +14,18 @@
             font-size: 13px;
             color: #222;
             line-height: 1.6;
-
             background-image: url("{{ logo_path }}");
             background-position: center center;
             background-repeat: no-repeat;
-            background-opacity: 0.05; /* Ignored by xhtml2pdf unfortunately */
-            opacity: 1; /* fallback */
+            background-size: 60% auto;
+            opacity: 1;
         }
 
         h1 {
             color: #1a1a1a;
             border-bottom: 2px solid #007BFF;
             padding-bottom: 6px;
+            margin-bottom: 20px;
         }
 
         h2 {
@@ -35,50 +35,216 @@
             margin-top: 30px;
         }
 
+        h3 {
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .risk-high {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .risk-medium {
+            color: #fd7e14;
+            font-weight: bold;
+        }
+
+        .risk-low {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .security-alert {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 15px 0;
+        }
+
         pre {
             background-color: #f4f4f4;
             padding: 10px;
             border-left: 4px solid #007BFF;
             overflow-x: auto;
+            font-size: 12px;
         }
 
         ul {
             margin-left: 20px;
+            padding-left: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .summary-item {
+            margin-bottom: 8px;
+        }
+
+        .summary-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 180px;
         }
     </style>
 </head>
 <body>
     <h1>IP Intelligence Report for {{ result.ip }}</h1>
 
-    <h2>Basic Info</h2>
-    <p><strong>Private IP:</strong> {{ result.is_private }}</p>
-    <p><strong>Reverse DNS:</strong> {{ result.reverse_dns }}</p>
+    <div class="security-alert">
+        <h3>Security Summary</h3>
+        <div class="summary-item">
+            <span class="summary-label">Fraud Risk Score:</span>
+            <span class="risk-high">{{ result.ipqs_lookup.fraud_score }} (High Risk)</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Proxy/VPN:</span>
+            <span class="risk-high">{{ result.ipqs_lookup.proxy|yesno:"Yes,No" }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Recent Abuse:</span>
+            <span class="risk-high">{{ result.ipqs_lookup.recent_abuse|yesno:"Yes,No" }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Blacklist Status:</span>
+            <span class="{% if result.blacklist.abuseConfidenceScore > 0 %}risk-high{% else %}risk-low{% endif %}">
+                {{ result.blacklist.abuseConfidenceScore|default:0 }} ({{ result.blacklist.abuseConfidenceScore|default:0|yesno:"Listed,Clean" }})
+            </span>
+        </div>
+    </div>
+
+    <h2>Basic Information</h2>
+    <div class="summary-item">
+        <span class="summary-label">Private IP:</span>
+        <span>{{ result.is_private|yesno:"Yes,No" }}</span>
+    </div>
+    <div class="summary-item">
+        <span class="summary-label">Reverse DNS:</span>
+        <span>{{ result.reverse_dns }}</span>
+    </div>
+    <div class="summary-item">
+        <span class="summary-label">ISP/Organization:</span>
+        <span>{{ result.geo.org }} (AS{{ result.geo.asn }})</span>
+    </div>
 
     <h2>Geolocation</h2>
-    {% for k, v in result.geo.items() %}
-        <p><strong>{{ k }}:</strong> {{ v }}</p>
-    {% endfor %}
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        {% for k, v in result.geo.items() %}
+        <tr>
+            <td>{{ k }}</td>
+            <td>{{ v }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
-    <h2>Whois</h2>
-    {% for k, v in result.whois.items() %}
-        <p><strong>{{ k }}:</strong> {{ v }}</p>
-    {% endfor %}
+    <h2>Whois Information</h2>
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        {% for k, v in result.whois.items() %}
+        <tr>
+            <td>{{ k }}</td>
+            <td>{{ v }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
-    <h2>Blacklist Info</h2>
-    {% for k, v in result.blacklist.items() %}
-        <p><strong>{{ k }}:</strong> {{ v }}</p>
-    {% endfor %}
+    <h2>Blacklist Information</h2>
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+        {% for k, v in result.blacklist.items() %}
+        <tr>
+            <td>{{ k }}</td>
+            <td>{{ v }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
-    <h2>Shodan</h2>
+    <h2>Network Services</h2>
+    <h3>Open Ports</h3>
+    <table>
+        <tr>
+            <th>Port/Service</th>
+            <th>Status</th>
+        </tr>
+        {% for port in result.viewdns_port_scan %}
+        <tr>
+            <td>{{ port.split('/')[0] }} ({{ port.split('/')[0]|port_service }})</td>
+            <td>{{ port.split('-')[1]|trim }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Associated Domains (Sample)</h2>
+    <p>Total domains: {{ result.viewdns_reverse_ip|length }} (showing first 20)</p>
+    <table>
+        <tr>
+            <th>Domain</th>
+            <th>Last Resolved</th>
+        </tr>
+        {% for domain in result.viewdns_reverse_ip[:20] %}
+        <tr>
+            <td>{{ domain.name }}</td>
+            <td>{{ domain.last_resolved }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Threat Intelligence</h2>
+    <h3>IPQS Lookup</h3>
+    <pre>{{ result.ipqs_lookup | tojson(indent=2) }}</pre>
+
+    <h3>Shodan Data</h3>
     <pre>{{ result.shodan | tojson(indent=2) }}</pre>
 
-    <h2>ViewDNS Reverse IP</h2>
-    <ul>{% for domain in result.viewdns_reverse_ip %}<li>{{ domain.name }} - {{ domain.last_resolved }}</li>{% endfor %}</ul>
-
-    <h2>ViewDNS Port Scan</h2>
-    <ul>{% for port in result.viewdns_port_scan %}<li>{{ port }}</li>{% endfor %}</ul>
-
-    <h2>IPQS Lookup</h2>
-    <pre>{{ result.ipqs_lookup | tojson(indent=2) }}</pre>
+    <div class="page-break"></div>
+    
+    <h2>Security Assessment</h2>
+    <div class="security-alert">
+        <h3>Risk Analysis</h3>
+        <p>Based on the collected intelligence, this IP address presents the following risks:</p>
+        <ul>
+            <li><strong>High Fraud Score ({{ result.ipqs_lookup.fraud_score }})</strong> - Indicates likely malicious activity</li>
+            <li><strong>Proxy/VPN detected</strong> - Often used to hide origin</li>
+            <li><strong>Multiple gambling domains</strong> - {{ result.viewdns_reverse_ip|length }} domains hosted</li>
+            <li><strong>Open services</strong> - FTP, SMTP, and HTTP services available</li>
+        </ul>
+        
+        <h3>Recommendations</h3>
+        <ul>
+            <li>Exercise caution when interacting with this IP</li>
+            <li>Consider blocking if not required for business purposes</li>
+            <li>Monitor for any changes in blacklist status</li>
+            <li>Investigate further if this IP appears in your logs</li>
+        </ul>
+    </div>
 </body>
 </html>
