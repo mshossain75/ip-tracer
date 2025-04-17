@@ -108,25 +108,6 @@ def viewdns_reverse_ip(ip):
     except:
         return []
 
-def viewdns_http_headers(ip):
-    try:
-        url = f"https://api.viewdns.info/httpheaders/?url={ip}&apikey={VIEWDNS_KEY}&output=json"
-        r = requests.get(url, timeout=10)
-        headers = r.json().get("response", {}).get("headers", {})
-        return headers if isinstance(headers, dict) else {}
-    except Exception as e:
-        print(f"[ViewDNS Headers Error] {e}")
-        return {}
-
-
-def viewdns_dns_records(ip):
-    try:
-        key = os.getenv("VIEWDNS_KEY")
-        url = f"https://api.viewdns.info/dnsrecord/?domain={ip}&apikey={key}&output=json"
-        r = requests.get(url, timeout=10)
-        return r.json().get("response", {}).get("records", [])
-    except:
-        return []
 
 def ipqs_lookup(ip):
     try:
@@ -157,8 +138,6 @@ def index():
             result["shodan"] = shodan_lookup(ip)
             result["viewdns_reverse_ip"] = viewdns_reverse_ip(ip)
             result["viewdns_port_scan"] = viewdns_port_scan(ip)
-            result["viewdns_http_headers"] = viewdns_http_headers(ip)
-            result["viewdns_dns_records"] = viewdns_dns_records(ip)
             result["ipqs_lookup"] = ipqs_lookup(ip)
 
 	
@@ -185,8 +164,6 @@ def download_pdf():
         result["shodan"] = shodan_lookup(ip)
         result["viewdns_reverse_ip"] = viewdns_reverse_ip(ip)
         result["viewdns_port_scan"] = viewdns_port_scan(ip)
-        result["viewdns_http_headers"] = viewdns_http_headers(ip)
-        result["viewdns_dns_records"] = viewdns_dns_records(ip)
         result["ipqs_lookup"] = ipqs_lookup(ip)
 
     # Render HTML from template
