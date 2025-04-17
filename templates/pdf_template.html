@@ -12,17 +12,14 @@
         body {
             font-family: Arial, sans-serif;
             font-size: 13px;
-            color: #333;
-            position: relative;
-        }
+            color: #222;
+            line-height: 1.6;
 
-        .watermark {
-            position: fixed;
-            top: 35%;
-            left: 20%;
-            width: 500px;
-            opacity: 0.06;
-            z-index: -1;
+            background-image: url("{{ logo_path }}");
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-opacity: 0.05; /* Ignored by xhtml2pdf unfortunately */
+            opacity: 1; /* fallback */
         }
 
         h1 {
@@ -38,13 +35,8 @@
             margin-top: 30px;
         }
 
-        p, li {
-            line-height: 1.5;
-            margin-bottom: 6px;
-        }
-
         pre {
-            background: #f7f7f7;
+            background-color: #f4f4f4;
             padding: 10px;
             border-left: 4px solid #007BFF;
             overflow-x: auto;
@@ -53,73 +45,40 @@
         ul {
             margin-left: 20px;
         }
-
-        .section {
-            margin-bottom: 25px;
-        }
     </style>
 </head>
 <body>
-
-    <!-- Watermark (visible on every page) -->
-    <img src="{{ logo_path }}" class="watermark" alt="Company Logo">
-
     <h1>IP Intelligence Report for {{ result.ip }}</h1>
 
-    <div class="section">
-        <h2>Basic Info</h2>
-        <p><strong>Private IP:</strong> {{ result.is_private }}</p>
-        <p><strong>Reverse DNS:</strong> {{ result.reverse_dns }}</p>
-    </div>
+    <h2>Basic Info</h2>
+    <p><strong>Private IP:</strong> {{ result.is_private }}</p>
+    <p><strong>Reverse DNS:</strong> {{ result.reverse_dns }}</p>
 
-    <div class="section">
-        <h2>Geolocation</h2>
-        {% for k, v in result.geo.items() %}
-            <p><strong>{{ k }}:</strong> {{ v }}</p>
-        {% endfor %}
-    </div>
+    <h2>Geolocation</h2>
+    {% for k, v in result.geo.items() %}
+        <p><strong>{{ k }}:</strong> {{ v }}</p>
+    {% endfor %}
 
-    <div class="section">
-        <h2>Whois</h2>
-        {% for k, v in result.whois.items() %}
-            <p><strong>{{ k }}:</strong> {{ v }}</p>
-        {% endfor %}
-    </div>
+    <h2>Whois</h2>
+    {% for k, v in result.whois.items() %}
+        <p><strong>{{ k }}:</strong> {{ v }}</p>
+    {% endfor %}
 
-    <div class="section">
-        <h2>Blacklist Info</h2>
-        {% for k, v in result.blacklist.items() %}
-            <p><strong>{{ k }}:</strong> {{ v }}</p>
-        {% endfor %}
-    </div>
+    <h2>Blacklist Info</h2>
+    {% for k, v in result.blacklist.items() %}
+        <p><strong>{{ k }}:</strong> {{ v }}</p>
+    {% endfor %}
 
-    <div class="section">
-        <h2>Shodan</h2>
-        <pre>{{ result.shodan | tojson(indent=2) }}</pre>
-    </div>
+    <h2>Shodan</h2>
+    <pre>{{ result.shodan | tojson(indent=2) }}</pre>
 
-    <div class="section">
-        <h2>ViewDNS Reverse IP</h2>
-        <ul>
-            {% for domain in result.viewdns_reverse_ip %}
-                <li>{{ domain.name }} - {{ domain.last_resolved }}</li>
-            {% endfor %}
-        </ul>
-    </div>
+    <h2>ViewDNS Reverse IP</h2>
+    <ul>{% for domain in result.viewdns_reverse_ip %}<li>{{ domain.name }} - {{ domain.last_resolved }}</li>{% endfor %}</ul>
 
-    <div class="section">
-        <h2>ViewDNS Port Scan</h2>
-        <ul>
-            {% for port in result.viewdns_port_scan %}
-                <li>{{ port }}</li>
-            {% endfor %}
-        </ul>
-    </div>
+    <h2>ViewDNS Port Scan</h2>
+    <ul>{% for port in result.viewdns_port_scan %}<li>{{ port }}</li>{% endfor %}</ul>
 
-    <div class="section">
-        <h2>IPQS Lookup</h2>
-        <pre>{{ result.ipqs_lookup | tojson(indent=2) }}</pre>
-    </div>
-
+    <h2>IPQS Lookup</h2>
+    <pre>{{ result.ipqs_lookup | tojson(indent=2) }}</pre>
 </body>
 </html>
