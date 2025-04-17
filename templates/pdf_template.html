@@ -2,58 +2,90 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>IP Trace Report</title>
+    <title>IP OSINT Report</title>
     <style>
-        body { font-family: Arial; }
-        h2 { border-bottom: 1px solid #ccc; }
-        p { margin-bottom: 10px; }
+        body {
+            font-family: Arial;
+            position: relative;
+            padding: 40px;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            opacity: 0.08;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            z-index: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        h2 {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 4px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-left: 4px solid #007BFF;
+            overflow-x: auto;
+        }
+
+        ul {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
-    <h1>IP Trace Report for {{ result.ip }}</h1>
 
-    <h2>Basic Info</h2>
-    <p>Private IP: {{ result.is_private }}</p>
-    <p>Reverse DNS: {{ result.reverse_dns }}</p>
+    <!-- Watermark logo -->
+    <img src="{{ url_for('static', filename='images/logo.png') }}" class="watermark" alt="Watermark Logo">
 
-    <h2>Geolocation</h2>
-    {% for k, v in result.geo.items() %}
-        <p><strong>{{ k }}:</strong> {{ v }}</p>
-    {% endfor %}
+    <div class="content">
+        <h1>IP Trace Report for {{ result.ip }}</h1>
 
-    <h2>Whois</h2>
-    {% for k, v in result.whois.items() %}
-        <p><strong>{{ k }}:</strong> {{ v }}</p>
-    {% endfor %}
+        <h2>Basic Info</h2>
+        <p>Private IP: {{ result.is_private }}</p>
+        <p>Reverse DNS: {{ result.reverse_dns }}</p>
 
-    <h2>Blacklist Info</h2>
-    {% for k, v in result.blacklist.items() %}
-        <p><strong>{{ k }}:</strong> {{ v }}</p>
-    {% endfor %}
+        <h2>Geolocation</h2>
+        {% for k, v in result.geo.items() %}
+            <p><strong>{{ k }}:</strong> {{ v }}</p>
+        {% endfor %}
 
-    <h2>Shodan</h2>
-    <pre>{{ result.shodan | tojson(indent=2) }}</pre>
+        <h2>Whois</h2>
+        {% for k, v in result.whois.items() %}
+            <p><strong>{{ k }}:</strong> {{ v }}</p>
+        {% endfor %}
 
-    <h2>Nmap</h2>
-    <pre>{{ result.nmap }}</pre>
+        <h2>Blacklist Info</h2>
+        {% for k, v in result.blacklist.items() %}
+            <p><strong>{{ k }}:</strong> {{ v }}</p>
+        {% endfor %}
 
-    <h2>ViewDNS Reverse IP</h2>
-    <ul>{% for domain in result.viewdns_reverse_ip %}<li>{{ domain }}</li>{% endfor %}</ul>
+        <h2>Shodan</h2>
+        <pre>{{ result.shodan | tojson(indent=2) }}</pre>
 
-    <h2>ViewDNS Port Scan</h2>
-    <ul>{% for port in result.viewdns_port_scan %}<li>{{ port }}</li>{% endfor %}</ul>
 
-    <h2>HTTP Headers</h2>
-    {% for k, v in result.viewdns_http_headers.items() %}
-        <p><strong>{{ k }}:</strong> {{ v }}</p>
-    {% endfor %}
+        <h2>ViewDNS Reverse IP</h2>
+        <ul>{% for domain in result.viewdns_reverse_ip %}<li>{{ domain }}</li>{% endfor %}</ul>
 
-    <h2>DNS Records</h2>
-    {% for record in result.viewdns_dns_records %}
-        <p>{{ record }}</p>
-    {% endfor %}
+        <h2>ViewDNS Port Scan</h2>
+        <ul>{% for port in result.viewdns_port_scan %}<li>{{ port }}</li>{% endfor %}</ul>
 
-    <h2>IPQS Lookup</h2>
-    <pre>{{ result.ipqs_lookup | tojson(indent=2) }}</pre>
+        <h2>IPQS Lookup</h2>
+        <pre>{{ result.ipqs_lookup | tojson(indent=2) }}</pre>
+    </div>
+
 </body>
 </html>
