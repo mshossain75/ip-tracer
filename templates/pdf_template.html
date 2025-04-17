@@ -62,12 +62,26 @@
             margin: 15px 0;
         }
 
+        .company-promo {
+            background-color: #e9f7ef;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .company-name {
+            color: #28a745;
+            font-weight: bold;
+        }
+
         pre {
             background-color: #f4f4f4;
             padding: 10px;
             border-left: 4px solid #007BFF;
             overflow-x: auto;
             font-size: 12px;
+            border-radius: 4px;
         }
 
         ul {
@@ -105,6 +119,15 @@
             display: inline-block;
             width: 180px;
         }
+
+        a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -118,16 +141,16 @@
         </div>
         <div class="summary-item">
             <span class="summary-label">Proxy/VPN:</span>
-            <span class="risk-high">{{ result.ipqs_lookup.proxy|yesno:"Yes,No" }}</span>
+            <span class="risk-high">{{ 'Yes' if result.ipqs_lookup.proxy else 'No' }}</span>
         </div>
         <div class="summary-item">
             <span class="summary-label">Recent Abuse:</span>
-            <span class="risk-high">{{ result.ipqs_lookup.recent_abuse|yesno:"Yes,No" }}</span>
+            <span class="risk-high">{{ 'Yes' if result.ipqs_lookup.recent_abuse else 'No' }}</span>
         </div>
         <div class="summary-item">
             <span class="summary-label">Blacklist Status:</span>
             <span class="{% if result.blacklist.abuseConfidenceScore > 0 %}risk-high{% else %}risk-low{% endif %}">
-                {{ result.blacklist.abuseConfidenceScore|default:0 }} ({{ result.blacklist.abuseConfidenceScore|default:0|yesno:"Listed,Clean" }})
+                {{ result.blacklist.abuseConfidenceScore|default(0) }} ({{ 'Listed' if result.blacklist.abuseConfidenceScore|default(0) > 0 else 'Clean' }})
             </span>
         </div>
     </div>
@@ -135,7 +158,7 @@
     <h2>Basic Information</h2>
     <div class="summary-item">
         <span class="summary-label">Private IP:</span>
-        <span>{{ result.is_private|yesno:"Yes,No" }}</span>
+        <span>{{ 'Yes' if result.is_private else 'No' }}</span>
     </div>
     <div class="summary-item">
         <span class="summary-label">Reverse DNS:</span>
@@ -197,7 +220,7 @@
         </tr>
         {% for port in result.viewdns_port_scan %}
         <tr>
-            <td>{{ port.split('/')[0] }} ({{ port.split('/')[0]|port_service }})</td>
+            <td>{{ port.split('/')[0] }} ({{ port.split('/')[0] }})</td>
             <td>{{ port.split('-')[1]|trim }}</td>
         </tr>
         {% endfor %}
@@ -245,6 +268,20 @@
             <li>Monitor for any changes in blacklist status</li>
             <li>Investigate further if this IP appears in your logs</li>
         </ul>
+
+        <div class="company-promo">
+            <h3>Professional Security Protection by <span class="company-name">All in One Security</span></h3>
+            <p>Protect your organization from malicious IPs and cyber threats with our comprehensive security solutions:</p>
+            <ul>
+                <li>Real-time Threat Intelligence</li>
+                <li>Network Security Monitoring</li>
+                <li>Incident Response Services</li>
+                <li>Custom Security Solutions</li>
+                <li>24/7 Security Operations Center</li>
+            </ul>
+            <p><strong>Contact us today:</strong> <a href="https://ai1security.net">ai1security.net</a> | info@ai1security.net</p>
+            <p>Let our experts help you secure your digital assets against threats like this one.</p>
+        </div>
     </div>
 </body>
 </html>
