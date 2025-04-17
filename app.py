@@ -17,15 +17,21 @@ load_dotenv()
 app = Flask(__name__)
 
 # Load API keys from environment variables
-IPINFO_TOKEN = os.getenv("92fad0c184571d")
-ABUSEIPDB_KEY = os.getenv("d00da4abb8e83e9181e591b487bd51ffb465807c0bceef29b407143495e69eaa15ae55f40b34288c")
-SHODAN_API_KEY = os.getenv("d7XPNRz9bR3NDW81NxI0U2MHmbKQqYLr")
-VIEWDNS_KEY = os.getenv("b01124d6abbaf4956d44412d6512f7ece2e687d1")
-IPQS_KEY = os.getenv("bAe76K0k9YYnphSZHnE13zzLNa896zwu")
+IPINFO_TOKEN = os.getenv("IPINFO_TOKEN")
+ABUSEIPDB_KEY = os.getenv("ABUSEIPDB_KEY")
+SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
+VIEWDNS_KEY = os.getenv("VIEWDNS_KEY")
+IPQS_KEY = os.getenv("IPQS_KEY")
 
 def is_private_ip(ip):
     try:
         return ipaddress.ip_address(ip).is_private
+    except ValueError:
+        return False
+def is_valid_ip(ip):
+    try:
+        ipaddress.ip_address(ip)
+        return True
     except ValueError:
         return False
 
