@@ -2,87 +2,135 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>IP OSINT Report</title>
+    <title>IP Intelligence Report</title>
     <style>
+        @page {
+            size: A4;
+            margin: 50px;
+        }
+
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: #333;
             position: relative;
-            padding: 40px;
         }
 
         .watermark {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 300px;
-            opacity: 0.08;
-            transform: translate(-50%, -50%) rotate(-30deg);
-            z-index: 0;
+            top: 35%;
+            left: 20%;
+            width: 500px;
+            opacity: 0.06;
+            z-index: -1;
         }
 
-        .content {
-            position: relative;
-            z-index: 1;
+        h1 {
+            color: #1a1a1a;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 6px;
         }
 
         h2 {
+            color: #007BFF;
             border-bottom: 1px solid #ccc;
             padding-bottom: 4px;
+            margin-top: 30px;
         }
 
-        p {
-            margin-bottom: 10px;
+        p, li {
+            line-height: 1.5;
+            margin-bottom: 6px;
         }
 
         pre {
-            background-color: #f4f4f4;
+            background: #f7f7f7;
             padding: 10px;
             border-left: 4px solid #007BFF;
             overflow-x: auto;
         }
 
         ul {
-            margin-bottom: 15px;
+            margin-left: 20px;
+        }
+
+        .section {
+            margin-bottom: 25px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Watermark logo -->
+    <!-- Watermark (visible on every page) -->
     <img src="{{ logo_path }}" class="watermark" alt="Company Logo">
 
-    <div class="content">
-        <h1>IP Trace Report for {{ result.ip }}</h1>
+    <h1>IP Intelligence Report for {{ result.ip }}</h1>
 
+    <div class="section">
         <h2>Basic Info</h2>
-        <p>Private IP: {{ result.is_private }}</p>
-        <p>Reverse DNS: {{ result.reverse_dns }}</p>
+        <p><strong>Private IP:</strong> {{ result.is_private }}</p>
+        <p><strong>Reverse DNS:</strong> {{ result.reverse_dns }}</p>
+    </div>
 
+    <div class="section">
         <h2>Geolocation</h2>
         {% for k, v in result.geo.items() %}
             <p><strong>{{ k }}:</strong> {{ v }}</p>
         {% endfor %}
+    </div>
 
+    <div class="section">
         <h2>Whois</h2>
         {% for k, v in result.whois.items() %}
             <p><strong>{{ k }}:</strong> {{ v }}</p>
         {% endfor %}
+    </div>
 
+    <div class="section">
         <h2>Blacklist Info</h2>
         {% for k, v in result.blacklist.items() %}
             <p><strong>{{ k }}:</strong> {{ v }}</p>
         {% endfor %}
+    </div>
 
+    <div class="section">
         <h2>Shodan</h2>
         <pre>{{ result.shodan | tojson(indent=2) }}</pre>
+    </div>
 
-
+    <div class="section">
         <h2>ViewDNS Reverse IP</h2>
-        <ul>{% for domain in result.viewdns_reverse_ip %}<li>{{ domain }}</li>{% endfor %}</ul>
+        <ul>
+            {% for domain in result.viewdns_reverse_ip %}
+                <li>{{ domain.name }} - {{ domain.last_resolved }}</li>
+            {% endfor %}
+        </ul>
+    </div>
 
+    <div class="section">
         <h2>ViewDNS Port Scan</h2>
-        <ul>{% for port in result.viewdns_port_scan %}<li>{{ port }}</li>{% endfor %}</ul>
+        <ul>
+            {% for port in result.viewdns_port_scan %}
+                <li>{{ port }}</li>
+            {% endfor %}
+        </ul>
+    </div>
 
+    <div class="section">
+        <h2>HTTP Headers</h2>
+        {% for k, v in result.viewdns_http_headers.items() %}
+            <p><strong>{{ k }}:</strong> {{ v }}</p>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h2>DNS Records</h2>
+        {% for record in result.viewdns_dns_records %}
+            <p>{{ record }}</p>
+        {% endfor %}
+    </div>
+
+    <div class="section">
         <h2>IPQS Lookup</h2>
         <pre>{{ result.ipqs_lookup | tojson(indent=2) }}</pre>
     </div>
