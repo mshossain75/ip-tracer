@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔍 IP Intelligence & Reconnaissance</title>
+    <title>🔍 IP OSINT Tools</title>
     <meta name="description" content="Trace and analyze any IP address with our advanced IP Tracer tool. Powered by AI1Security and created by Leetsec Sarwar.">
     <meta name="keywords" content="IP tracer, IP lookup, IP address tracker, geolocation, whois, security tools, All in One Security">
     <meta name="author" content="Leetsec Sarwar, All in One Security">
@@ -50,13 +50,13 @@
 <body>
 
     <div class="container">
-        <h1 class="mb-4 text-center">🔍 IP Tracer Tool</h1>
+        <h1 class="mb-4 text-center">🔍 IP Intelligence & Reconnaissance</h1>
         <p class="text-center text-muted">Analyze IP addresses with geolocation, blacklist lookup, whois data, Shodan info, and more.</p>
 
         <form method="POST">
             <div class="input-group mb-3">
                 <input type="text" name="ip" class="form-control" placeholder="Enter an IP address..." required>
-                <button class="btn btn-primary" type="submit">Trace IP</button>
+                <button class="btn btn-primary" type="submit">Analyze</button>
             </div>
         </form>
 
@@ -102,14 +102,6 @@
 
                 <h5 class="mt-4">🔓 Port Scan</h5>
                 <ul>{% for port in result.viewdns_port_scan %}<li>{{ port }}</li>{% endfor %}</ul>
-
-                <h5 class="mt-4">📥 HTTP Headers</h5>
-                <ul>{% for k, v in result.viewdns_http_headers.items() %}
-                    <li><strong>{{ k }}:</strong> {{ v }}</li>
-                {% endfor %}</ul>
-
-                <h5 class="mt-4">📄 DNS Records</h5>
-                <ul>{% for record in result.viewdns_dns_records %}<li>{{ record }}</li>{% endfor %}</ul>
 
                 <h5 class="mt-4">🧠 IP Quality Score</h5>
                 <pre>{{ result.ipqs_lookup | tojson(indent=2) }}</pre>
